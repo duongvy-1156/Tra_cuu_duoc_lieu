@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trang Quản Trị - Vườn Thuốc Nam</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* CSS riêng cho trang Admin để hiển thị dạng bảng */
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background-color: #2e7d32; color: white; }
+        .action-btn { padding: 6px 12px; margin-right: 5px; cursor: pointer; border: none; border-radius: 4px;}
+        .btn-edit { background-color: #ffc107; color: black; }
+        .btn-delete { background-color: #f44336; color: white; }
+        .btn-add { background-color: #4caf50; color: white; padding: 10px 20px; font-size: 16px; margin-bottom: 20px;}
+        /* Hiệu ứng làm mờ khi nút bị vô hiệu hóa */
+        button:disabled {
+            background-color: #cccccc !important;
+            color: #666666 !important;
+            cursor: not-allowed !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" style="max-width: 1000px;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h1 style="color: #2e7d32;">Bảng Điều Khiển Quản Trị</h1>
+            <button id="btn-logout" style="padding: 8px 16px; background-color: #757575; color: white; border: none; border-radius: 4px; cursor: pointer;">Đăng xuất</button>
+        </div>
+        
+        <p>Xin chào Ban Quản trị, dưới đây là danh sách dược liệu hiện có:</p>
+        
+        <button class="action-btn btn-add" id="btn-show-add-form">+ Thêm Dược Liệu Mới</button>
+        <div id="form-container" style="display: none; background: #e8f5e9; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #c8e6c9;">
+            <h3 style="color: #2e7d32; margin-top: 0;">Thêm Dược Liệu Mới</h3>
+            <input type="text" id="input-ten" placeholder="Tên thường gọi (vd: Đinh Lăng)" style="width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px;">
+            <input type="text" id="input-khoa-hoc" placeholder="Tên khoa học" style="width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px;">
+            <textarea id="input-dac-tinh" placeholder="Đặc tính sinh học" rows="3" style="width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px;"></textarea>
+            <textarea id="input-cong-dung" placeholder="Công dụng chữa bệnh" rows="3" style="width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px;"></textarea>
+            <input type="text" id="input-khu-vuc" placeholder="Khu vực phân bố" style="width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px;">
+            <input type="text" id="input-hinh-anh" placeholder="Đường link hình ảnh (URL)" style="width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px;">
+            
+            <button id="btn-save" style="padding: 10px 20px; background-color: #2e7d32; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">Lưu Lên Đám Mây</button>
+            <button id="btn-cancel" style="padding: 10px 20px; background-color: #9e9e9e; color: white; border: none; border-radius: 4px; cursor: pointer; margin-left: 10px;">Hủy Bỏ</button>
+        </div>
+        <table id="bang-duoc-lieu">
+            <thead>
+                <tr>
+                    <th>Tên thường gọi</th>
+                    <th>Tên khoa học</th>
+                    <th>Khu vực trồng</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+            <tbody id="danh-sach-admin">
+                <tr><td colspan="4">Đang tải dữ liệu...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script type="module" src="admin.js"></script>
+</body>
+</html>

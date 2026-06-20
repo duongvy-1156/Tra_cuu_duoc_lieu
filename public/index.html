@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý và tra cứu dược liệu</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header class="top-nav">
+        <div class="nav-left">
+            <span class="logo-icon">🌿</span>
+            <span class="logo-text">TRA CỨU & QUẢN LÝ DƯỢC LIỆU <br><small>Tri thức y học cổ truyền trong tầm tay</small></span>
+        </div>
+        <div class="nav-right">
+            <a href="index.html" class="nav-link active">Trang chủ</a>
+            <a href="danhmuc.html" class="nav-link">Danh mục</a>
+            <a href="admin.html" class="nav-link" id="nav-admin-link">Quản trị</a>
+        </div>
+    </header>
+
+    <section class="hero-section">
+        <div class="hero-content">
+            <h2>Chào mừng bạn đến với Tra cứu & quản lý dược liệu</h2>
+            <p>Hệ thống tra cứu thông tin dược liệu toàn diện, chính xác và đáng tin cậy.</p>
+            
+            <div class="search-box">
+                <input type="text" id="input-tim-kiem" placeholder="🔍 Nhập tên cây thuốc cần tìm...">
+                <div id="ket-qua-tim-kiem" class="search-results-dropdown"></div>
+            </div>
+        </div>
+    </section>
+
+    <section class="popular-section">
+        <div class="container">
+            <h2 class="section-title">🔥 Dược Liệu Phổ Biến</h2>
+            <div id="danh-sach-pho-bien" class="grid-container">
+                <p style="text-align: center; width: 100%;">Đang tải dữ liệu phổ biến...</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="stats-section">
+        <div class="container stats-grid">
+            <div class="stat-box">
+                <h3 id="tong-so-cay">0</h3>
+                <p>Loài Dược Liệu</p>
+            </div>
+            <div class="stat-box">
+                <h3 id="tong-luot-truy-cap">0</h3>
+                <p>Lượt Truy Cập</p>
+            </div>
+        </div>
+    </section>
+
+    <footer class="bottom-footer">
+        <p>&copy; 2026 - Hệ thống Quản lý và tra cứu dược liệu. Phát triển bởi Dương Hạ Vy - Đoàn Trương Anh Thư.</p>
+    </footer>
+
+    <script type="module" src="app.js"></script>
+</body>
+</html>

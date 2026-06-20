@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Danh mục Dược liệu - A-Z</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header class="top-nav">
+        <div class="nav-left">
+            <span class="logo-icon">🌿</span>
+            <span class="logo-text">TRA CỨU & QUẢN LÝ DƯỢC LIỆU <br><small>Tri thức y học cổ truyền trong tầm tay</small></span>
+        </div>
+        <div class="nav-right">
+            <a href="index.html" class="nav-link">Trang chủ</a>
+            <a href="danhmuc.html" class="nav-link active">Danh mục</a>
+            <a href="admin.html" class="nav-link" id="nav-admin-link">Quản trị</a>
+        </div>
+    </header>
+
+    <div class="container" style="padding: 40px 20px; min-height: 60vh;">
+        <h2 class="section-title">🗂️ Danh Mục Dược Liệu A-Z</h2>
+        <p style="text-align: center; color: #555; margin-bottom: 30px;">Lọc và tìm kiếm nhanh các loài cây thuốc theo bảng chữ cái.</p>
+
+        <div id="bo-loc-chu-cai" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-bottom: 40px;">
+            <button class="btn-filter active" data-letter="ALL">Tất cả</button>
+            </div>
+
+        <div id="danh-sach-duoc-lieu" class="grid-container">
+            <p style="text-align: center; width: 100%;">Đang tải dữ liệu từ đám mây...</p>
+        </div>
+    </div>
+
+    <footer class="bottom-footer">
+        <p>&copy; 2026 - Hệ thống Quản lý và tra cứu dược liệu. Phát triển bởi Dương Hạ Vy - Đoàn Trương Anh Thư.</p>
+    </footer>
+
+    <script type="module" src="danhmuc.js"></script>
+</body>
+</html>
