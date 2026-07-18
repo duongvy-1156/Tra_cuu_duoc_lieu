@@ -86,3 +86,80 @@ body {
     background-color: #1b5e20;
     transform: translateX(-5px); /* Hiệu ứng lùi nhẹ về bên trái */
 }
+/* ========================================= */
+/* CSS CHO MENU TÌM KIẾM TÙY CHỈNH           */
+/* ========================================= */
+.custom-dropdown {
+    position: relative;
+    /* Đổi width cứng thành min-width để tự động giãn ra vừa với chữ */
+    min-width: 200px;
+    width: max-content; 
+    user-select: none;
+}
+
+.dropdown-selected {
+    padding: 14px 20px;
+    background-color: #f1f8e9;
+    border-radius: 30px;
+    color: #2e7d32;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    /* Ép chữ phải nằm trên 1 dòng */
+    white-space: nowrap; 
+}
+
+/* ĐÂY LÀ CÁI MŨI TÊN DUY NHẤT CỦA BẠN */
+.dropdown-selected::after {
+    content: '▼';
+    font-size: 10px;
+    margin-left: 15px;
+    color: #2e7d32;
+}
+
+/* ĐÂY LÀ CÁI KHUNG MÀU TRẮNG VỪA BỊ MẤT TÍCH */
+.dropdown-options {
+    display: none; 
+    position: absolute;
+    top: 110%;
+    left: 0;
+    right: 0;
+    background-color: white; 
+    border-radius: 15px;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.15); 
+    overflow: hidden;
+    z-index: 99;
+}
+
+.dropdown-options.show {
+    display: block; 
+}
+
+.dropdown-item {
+    /* Tăng khoảng cách trên/dưới lên một chút (12px) để có chỗ cho đường kẻ */
+    padding: 12px 20px; 
+    color: #2e7d32;
+    cursor: pointer;
+    font-weight: 600; 
+    transition: all 0.3s ease; /* Chuyển động mượt mà cho cả nền và gạch chân */
+    white-space: nowrap; 
+    
+    /* Đường gạch ngang phân cách các mục (màu xanh lá rất nhạt cho thanh lịch) */
+    border-bottom: 1px solid #dcedc8; 
+}
+
+/* Xóa đường kẻ ở dòng "Nơi phân bố" (dòng cuối cùng) để menu không bị dư viền */
+.dropdown-item:last-child {
+    border-bottom: none;
+}
+
+.dropdown-item:hover {
+    /* Đổi màu nền xanh đậm hơn một chút so với mã cũ */
+    background-color: #c8e6c9; 
+    
+    /* Thêm hiệu ứng gạch chân chữ khi rà chuột */
+    text-decoration: underline; 
+}

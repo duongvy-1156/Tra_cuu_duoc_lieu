@@ -1,7 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
 import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-// DÁN FIREBASE CONFIG CỦA VY VÀO ĐÂY
+// Cấu hình Firebase của Vy
 const firebaseConfig = {
   apiKey: "AIzaSyAYMLhxvoF3SY5VyaTUXhAwhX0xAoLaVJU",
   authDomain: "qlvatracuuduoclieu.firebaseapp.com",
@@ -17,7 +17,7 @@ const db = getFirestore(app);
 
 let tatCaDuocLieu = [];
 
-// 1. TẢO NÚT BẤM CHO BẢNG CHỮ CÁI
+// 1. TẠO NÚT BẤM CHO BẢNG CHỮ CÁI
 function taoBoLocChuCai() {
     const bangChuCai = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
     const boLocContainer = document.getElementById("bo-loc-chu-cai");
@@ -29,9 +29,11 @@ function taoBoLocChuCai() {
         btn.setAttribute("data-letter", chu);
         
         btn.addEventListener("click", () => {
-            // Hiệu ứng đổi màu nút khi bấm
             document.querySelectorAll(".btn-filter").forEach(b => b.classList.remove("active"));
             btn.classList.add("active");
+            
+            // Ghi nhớ chữ cái vừa bấm vào bộ nhớ tạm của Tab
+            sessionStorage.setItem("chuCaiDaChon", chu);
             
             locTheoChuCai(chu);
         });
@@ -43,6 +45,10 @@ function taoBoLocChuCai() {
     document.querySelector(".btn-filter[data-letter='ALL']").addEventListener("click", (e) => {
         document.querySelectorAll(".btn-filter").forEach(b => b.classList.remove("active"));
         e.target.classList.add("active");
+        
+        // Ghi nhớ trạng thái xem Tất cả
+        sessionStorage.setItem("chuCaiDaChon", "ALL");
+        
         hienThiDanhSach(tatCaDuocLieu);
     });
 }
@@ -51,6 +57,7 @@ function taoBoLocChuCai() {
 async function taiDuLieuDanhMuc() {
     try {
         const querySnapshot = await getDocs(collection(db, "duoc_lieu"));
+        tatCaDuocLieu = [];
         
         querySnapshot.forEach((doc) => {
             const data = doc.data();
@@ -61,7 +68,28 @@ async function taiDuLieuDanhMuc() {
 
         // Sắp xếp mặc định A-Z
         tatCaDuocLieu.sort((a, b) => a.ten_thuong_goi.localeCompare(b.ten_thuong_goi));
-        hienThiDanhSach(tatCaDuocLieu);
+
+        // PHẦN XỬ LÝ THÔNG MINH: Kiểm tra xem có phải quay lại từ trang chitiet.html không
+        const tuChitietQuayVe = document.referrer.includes("chitiet.html");
+        const chuCaiLuuTru = tuChitietQuayVe ? (sessionStorage.getItem("chuCaiDaChon") || "ALL") : "ALL";
+
+        if (chuCaiLuuTru === "ALL") {
+            const btnAll = document.querySelector(".btn-filter[data-letter='ALL']");
+            if (btnAll) {
+                document.querySelectorAll(".btn-filter").forEach(b => b.classList.remove("active"));
+                btnAll.classList.add("active");
+            }
+            hienThiDanhSach(tatCaDuocLieu);
+        } else {
+            // Tự động kích hoạt lại màu sắc cho nút chữ cái đã chọn trước đó
+            const nutMucTieu = document.querySelector(`.btn-filter[data-letter='${chuCaiLuuTru}']`);
+            if (nutMucTieu) {
+                document.querySelectorAll(".btn-filter").forEach(b => b.classList.remove("active"));
+                nutMucTieu.classList.add("active");
+            }
+            // Tự động lọc lại danh sách theo chữ cái đó
+            locTheoChuCai(chuCaiLuuTru);
+        }
 
     } catch (error) {
         console.error("Lỗi:", error);
@@ -98,7 +126,6 @@ function hienThiDanhSach(danhSach) {
 // 4. LỌC CÂY THEO CHỮ CÁI ĐẦU TIÊN
 function locTheoChuCai(chuCai) {
     const ketQua = tatCaDuocLieu.filter(cay => {
-        // Lấy ký tự đầu tiên, bỏ dấu (nếu có) và in hoa để so sánh
         const ten = cay.ten_thuong_goi.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
         const chuDauTien = ten.charAt(0).toUpperCase();
         return chuDauTien === chuCai;
@@ -106,6 +133,6 @@ function locTheoChuCai(chuCai) {
     hienThiDanhSach(ketQua);
 }
 
-// Chạy hệ thống
+// Khởi chạy hệ thống danh mục
 taoBoLocChuCai();
 taiDuLieuDanhMuc();

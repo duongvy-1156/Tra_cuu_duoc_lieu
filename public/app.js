@@ -95,16 +95,70 @@ function hienThiDanhSach(danhSach, containerId) {
 }
 
 // 3. TÌM KIẾM NHANH Ở TRANG CHỦ
-document.getElementById("input-tim-kiem").addEventListener("input", (e) => {
-    const tuKhoa = e.target.value.toLowerCase().trim();
+// 3. TÌM KIẾM THEO TIÊU CHÍ (TÊN, CÔNG DỤNG, ĐỊA ĐIỂM)
+const oTimKiem = document.getElementById("input-tim-kiem");
+let tieuChiHienTai = "ten"; // Mặc định là tìm theo tên
+
+// Hàm thực hiện lọc dữ liệu
+function thucHienTimKiem() {
+    const tuKhoa = oTimKiem.value.toLowerCase().trim();
+
     if(tuKhoa === "") {
-        // Nếu xóa trắng ô tìm kiếm, hiển thị lại top 4 phổ biến
         const duocLieuPhoBien = [...tatCaDuocLieu].sort((a, b) => b.luot_xem - a.luot_xem).slice(0, 4);
         hienThiDanhSach(duocLieuPhoBien, "danh-sach-pho-bien");
         return;
     }
-    const ketQua = tatCaDuocLieu.filter(cay => cay.ten_thuong_goi.toLowerCase().includes(tuKhoa));
+
+    const ketQua = tatCaDuocLieu.filter(cay => {
+        const tenCay = cay.ten_thuong_goi ? cay.ten_thuong_goi.toLowerCase() : "";
+        const congDung = cay.cong_dung ? cay.cong_dung.toLowerCase() : "";
+        const diaDiem = cay.tap_trung_trong_o ? cay.tap_trung_trong_o.toLowerCase() : "";
+
+        if (tieuChiHienTai === "ten") return tenCay.includes(tuKhoa);
+        if (tieuChiHienTai === "cong_dung") return congDung.includes(tuKhoa);
+        if (tieuChiHienTai === "dia_diem") return diaDiem.includes(tuKhoa);
+        
+        return false;
+    });
+
     hienThiDanhSach(ketQua, "danh-sach-pho-bien");
+}
+
+oTimKiem.addEventListener("input", thucHienTimKiem);
+
+// --- LOGIC CHO MENU THẢ XUỐNG TỰ TẠO ---
+const dropdown = document.getElementById("dropdown-tieu-chi");
+const dropdownSelected = dropdown.querySelector(".dropdown-selected");
+const dropdownOptions = dropdown.querySelector(".dropdown-options");
+const dropdownItems = dropdown.querySelectorAll(".dropdown-item");
+
+// Bấm vào ô để mở/đóng menu
+dropdownSelected.addEventListener("click", (e) => {
+    e.stopPropagation(); // Ngăn click lọt ra ngoài
+    dropdownOptions.classList.toggle("show");
+});
+
+// Bấm ra chỗ trống bất kỳ trên web thì tự đóng menu
+window.addEventListener("click", () => {
+    dropdownOptions.classList.remove("show");
+});
+
+// Bấm chọn một mục trong menu
+dropdownItems.forEach(item => {
+    item.addEventListener("click", () => {
+        // Cập nhật giá trị đang chọn (CSS đã tự lo mũi tên nên chỉ cần lấy text)
+        tieuChiHienTai = item.getAttribute("data-value");
+        dropdownSelected.innerHTML = item.innerHTML;
+        // ... (phần dưới giữ nguyên)
+        
+        // Đổi câu gợi ý Placeholder
+        if (tieuChiHienTai === "ten") oTimKiem.placeholder = "Nhập tên cây thuốc cần tìm...";
+        else if (tieuChiHienTai === "cong_dung") oTimKiem.placeholder = "Nhập công dụng cần tìm...";
+        else if (tieuChiHienTai === "dia_diem") oTimKiem.placeholder = "Nhập địa điểm phân bố...";
+
+        // Tìm kiếm lại ngay
+        thucHienTimKiem();
+    });
 });
 
 

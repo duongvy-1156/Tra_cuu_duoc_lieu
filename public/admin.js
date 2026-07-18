@@ -89,27 +89,43 @@ let idDangSua = null; // Biến nhớ xem đang thêm mới hay sửa
 // Khi bấm nút Sửa trên bảng
 window.suaDuocLieu = async (id) => {
     try {
-        // Lấy dữ liệu cũ từ đám mây về
         const docSnap = await getDoc(doc(db, "duoc_lieu", id));
         if (docSnap.exists()) {
             const data = docSnap.data();
             
-            // Đổ dữ liệu cũ vào các ô textbox
+            // 1. Thông tin chung
             document.getElementById("input-ten").value = data.ten_thuong_goi || "";
             document.getElementById("input-khoa-hoc").value = data.ten_khoa_hoc || "";
-            document.getElementById("input-dac-tinh").value = data.dac_tinh_sinh_hoc || "";
-            document.getElementById("input-cong-dung").value = data.cong_dung || "";
-            document.getElementById("input-khu-vuc").value = data.tap_trung_trong_o || "";
-            document.getElementById("input-hinh-anh").value = data.hinh_anh || "";
+            document.getElementById("input-ho-thuc-vat").value = data.ho_thuc_vat || "";
 
-            // Đánh dấu ID đang sửa, đổi tên nút và hiện form
+            // 2. Thực vật học & Sinh thái (Tương thích ngược với trường dac_tinh_sinh_hoc cũ)
+            document.getElementById("input-mo-ta-hinh-thai").value = data.mo_ta_hinh_thai || data.dac_tinh_sinh_hoc || ""; 
+            document.getElementById("input-khu-vuc").value = data.tap_trung_trong_o || "";
+            document.getElementById("input-dac-diem-sinh-thai").value = data.dac_diem_sinh_thai || "";
+
+            // 3. Dược lý và Y học
+            document.getElementById("input-bo-phan-dung").value = data.bo_phan_dung || "";
+            document.getElementById("input-thanh-phan-hoa-hoc").value = data.thanh_phan_hoa_hoc || "";
+            document.getElementById("input-tinh-vi").value = data.tinh_vi_quy_kinh || "";
+            document.getElementById("input-cong-dung").value = data.cong_dung || "";
+            document.getElementById("input-cach-dung").value = data.cach_dung || "";
+            document.getElementById("input-luu-y").value = data.luu_y_kieng_ky || "";
+
+            // 4. Kỹ thuật & Thu hái
+            document.getElementById("input-ky-thuat-trong").value = data.ky_thuat_trong || "";
+            document.getElementById("input-thoi-diem-thu-hai").value = data.thoi_diem_thu_hai || "";
+            document.getElementById("input-so-che").value = data.so_che_bao_quan || "";
+
+            // 5. Hình ảnh
+            document.getElementById("input-hinh-anh").value = data.danh_sach_anh ? data.danh_sach_anh.join('\n') : (data.hinh_anh || "");
+
             idDangSua = id;
             const btnSave = document.getElementById("btn-save");
             btnSave.innerText = "Cập Nhật Lên Đám Mây";
-            btnSave.style.backgroundColor = "#ff9800"; // Đổi màu cam cho dễ phân biệt
+            btnSave.style.backgroundColor = "#ff9800"; 
             
             formContainer.style.display = "block";
-            window.scrollTo(0, 0); // Cuộn màn hình lên chỗ cái Form
+            window.scrollTo(0, 0); 
         }
     } catch (error) {
         console.error("Lỗi lấy dữ liệu:", error);
@@ -126,15 +142,32 @@ document.getElementById("btn-cancel").addEventListener("click", () => {
 
 // Xử lý nút Lưu (Gánh cả 2 việc: Thêm mới hoặc Cập nhật)
 document.getElementById("btn-save").addEventListener("click", async () => {
+    // Thu thập toàn bộ dữ liệu từ 15 ô nhập liệu
     const ten = document.getElementById("input-ten").value.trim();
-    const khoaHoc = document.getElementById("input-khoa-hoc").value.trim();
-    const dacTinh = document.getElementById("input-dac-tinh").value.trim();
-    const congDung = document.getElementById("input-cong-dung").value.trim();
+    const khoaHoc = document.getElementById("input-khoa-hoc").value.trim(); 
+    const hoThucVat = document.getElementById("input-ho-thuc-vat").value.trim();
+
+    const moTaHinhThai = document.getElementById("input-mo-ta-hinh-thai").value.trim();
     const khuVuc = document.getElementById("input-khu-vuc").value.trim();
-    const hinhAnh = document.getElementById("input-hinh-anh").value.trim();
+    const dacDiemSinhThai = document.getElementById("input-dac-diem-sinh-thai").value.trim();
+
+    const boPhanDung = document.getElementById("input-bo-phan-dung").value.trim();
+    const thanhPhanHoaHoc = document.getElementById("input-thanh-phan-hoa-hoc").value.trim();
+    const tinhVi = document.getElementById("input-tinh-vi").value.trim();
+    const congDung = document.getElementById("input-cong-dung").value.trim();
+    const cachDung = document.getElementById("input-cach-dung").value.trim();
+    const luuY = document.getElementById("input-luu-y").value.trim();
+
+    const kyThuatTrong = document.getElementById("input-ky-thuat-trong").value.trim();
+    const thoiDiemThuHai = document.getElementById("input-thoi-diem-thu-hai").value.trim();
+    const soChe = document.getElementById("input-so-che").value.trim();
+
+    const hinhAnhText = document.getElementById("input-hinh-anh").value.trim();
+    const danhSachAnh = hinhAnhText.split('\n').map(url => url.trim()).filter(url => url !== "");
+    const anhChinh = danhSachAnh.length > 0 ? danhSachAnh[0] : "";
 
     if (!ten || !khoaHoc) {
-        alert("Vui lòng nhập Tên thường gọi và Tên khoa học!");
+        alert("Vui lòng nhập Tên phổ thông và Tên khoa học!");
         return;
     }
 
@@ -143,31 +176,43 @@ document.getElementById("btn-save").addEventListener("click", async () => {
     btnSave.disabled = true;
 
     try {
+        // Cấu trúc Data chuẩn bị đẩy lên Firestore
         const duocLieuData = {
             ten_thuong_goi: ten,
             ten_khoa_hoc: khoaHoc,
-            dac_tinh_sinh_hoc: dacTinh,
-            cong_dung: congDung,
+            ho_thuc_vat: hoThucVat,
+
+            mo_ta_hinh_thai: moTaHinhThai,
             tap_trung_trong_o: khuVuc,
-            hinh_anh: hinhAnh
+            dac_diem_sinh_thai: dacDiemSinhThai,
+
+            bo_phan_dung: boPhanDung,
+            thanh_phan_hoa_hoc: thanhPhanHoaHoc,
+            tinh_vi_quy_kinh: tinhVi,
+            cong_dung: congDung,
+            cach_dung: cachDung,
+            luu_y_kieng_ky: luuY,
+
+            ky_thuat_trong: kyThuatTrong,
+            thoi_diem_thu_hai: thoiDiemThuHai,
+            so_che_bao_quan: soChe,
+
+            hinh_anh: anhChinh,
+            danh_sach_anh: danhSachAnh
         };
 
         if (idDangSua) {
-            // NẾU ĐANG SỬA: Cập nhật đè lên Document cũ
             await updateDoc(doc(db, "duoc_lieu", idDangSua), duocLieuData);
             alert("Đã cập nhật thành công!");
         } else {
-            // NẾU THÊM MỚI: Tạo Document mới
             await addDoc(collection(db, "duoc_lieu"), duocLieuData);
             alert("Đã thêm dược liệu mới thành công!");
         }
         
-        // Reset mọi thứ sau khi xong
         idDangSua = null;
         btnSave.innerText = "Lưu Lên Đám Mây";
         btnSave.style.backgroundColor = "#2e7d32";
-        
-        btnSave.disabled = false; // <--- THÊM DÒNG GIẢI CỨU NÀY VÀO ĐÂY NHÉ!
+        btnSave.disabled = false;
         
         formContainer.style.display = "none";
         xoaTrangForm();
@@ -218,9 +263,23 @@ document.getElementById("btn-cancel").addEventListener("click", () => {
 function xoaTrangForm() {
     document.getElementById("input-ten").value = "";
     document.getElementById("input-khoa-hoc").value = "";
-    document.getElementById("input-dac-tinh").value = "";
-    document.getElementById("input-cong-dung").value = "";
+    document.getElementById("input-ho-thuc-vat").value = "";
+    
+    document.getElementById("input-mo-ta-hinh-thai").value = "";
     document.getElementById("input-khu-vuc").value = "";
+    document.getElementById("input-dac-diem-sinh-thai").value = "";
+    
+    document.getElementById("input-bo-phan-dung").value = "";
+    document.getElementById("input-thanh-phan-hoa-hoc").value = "";
+    document.getElementById("input-tinh-vi").value = "";
+    document.getElementById("input-cong-dung").value = "";
+    document.getElementById("input-cach-dung").value = "";
+    document.getElementById("input-luu-y").value = "";
+    
+    document.getElementById("input-ky-thuat-trong").value = "";
+    document.getElementById("input-thoi-diem-thu-hai").value = "";
+    document.getElementById("input-so-che").value = "";
+    
     document.getElementById("input-hinh-anh").value = "";
 }
 

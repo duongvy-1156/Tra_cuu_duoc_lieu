@@ -22,12 +22,22 @@
 
     <section class="hero-section">
         <div class="hero-content">
-            <h2>Chào mừng bạn đến với Tra cứu & quản lý dược liệu</h2>
+            <h2>Chào mừng bạn đến với Tra cứu & Quản lý Dược liệu</h2>
             <p>Hệ thống tra cứu thông tin dược liệu toàn diện, chính xác và đáng tin cậy.</p>
             
-            <div class="search-box">
-                <input type="text" id="input-tim-kiem" placeholder="🔍 Nhập tên cây thuốc cần tìm...">
+            <div class="search-box" style="display: flex; gap: 10px; justify-content: center; align-items: center; max-width: 700px; margin: 0 auto;">
+                
+                <div class="custom-dropdown" id="dropdown-tieu-chi">
+                    <div class="dropdown-selected">Tên cây thuốc</div>
+                    <div class="dropdown-options">
+                        <div class="dropdown-item" data-value="ten">Tên cây thuốc</div>
+                        <div class="dropdown-item" data-value="cong_dung">Công dụng</div>
+                        <div class="dropdown-item" data-value="dia_diem">Nơi phân bố</div>
+                    </div>
+                </div>
+                <input type="text" id="input-tim-kiem" placeholder="Nhập tên cây thuốc cần tìm..." style="flex: 1; border-radius: 30px; padding: 14px 20px; border: none; box-shadow: 0 4px 10px rgba(0,0,0,0.1); outline: none;">
                 <div id="ket-qua-tim-kiem" class="search-results-dropdown"></div>
+                
             </div>
         </div>
     </section>
@@ -55,7 +65,7 @@
     </section>
 
     <footer class="bottom-footer">
-        <p>&copy; 2026 - Hệ thống Quản lý và tra cứu dược liệu. Phát triển bởi Dương Hạ Vy - Đoàn Trương Anh Thư.</p>
+        <p>&copy; 2026 - Hệ thống Quản lý và Tra cứu Dược liệu. Phát triển bởi Dương Hạ Vy.</p>
     </footer>
 
     <script type="module" src="app.js"></script>
