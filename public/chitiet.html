@@ -5,15 +5,189 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chi tiết Dược liệu</title>
     <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .detail-wrapper {
+            max-width: 1050px;
+            margin: 30px auto 60px;
+            padding: 0 20px;
+        }
+        .detail-card {
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+            border: 1px solid #e2ece2;
+            overflow: hidden;
+        }
+        .detail-hero {
+            display: grid;
+            grid-template-columns: 420px 1fr;
+            gap: 32px;
+            padding: 32px;
+            background: linear-gradient(135deg, #f8fbf8 0%, #eef6ee 100%);
+            border-bottom: 1px solid #dce8dc;
+            align-items: start;
+        }
+        .gallery-main {
+            width: 100%;
+            height: 310px;
+            object-fit: cover;
+            border-radius: 12px;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+            background: #fff;
+        }
+        .gallery-thumbs {
+            display: flex;
+            gap: 10px;
+            margin-top: 12px;
+            flex-wrap: wrap;
+        }
+        .thumb-img {
+            width: 68px;
+            height: 52px;
+            object-fit: cover;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            opacity: 0.75;
+            transition: all 0.2s ease;
+        }
+        .thumb-img:hover, .thumb-img.active {
+            border-color: #2e7d32;
+            opacity: 1;
+            transform: translateY(-2px);
+        }
+        .plant-badge {
+            display: inline-block;
+            background: #dcf1dd;
+            color: #1b5e20;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 6px 14px;
+            border-radius: 20px;
+            margin-bottom: 12px;
+        }
+        .plant-title {
+            color: #1b5e20;
+            font-size: 32px;
+            margin: 0 0 6px 0;
+            line-height: 1.25;
+        }
+        .plant-scientific {
+            color: #5a6b5a;
+            font-style: italic;
+            font-size: 17px;
+            margin: 0 0 20px 0;
+        }
+        .quick-meta {
+            display: grid;
+            gap: 12px;
+            background: #ffffff;
+            padding: 18px 20px;
+            border-radius: 12px;
+            border: 1px solid #dce8dc;
+        }
+        .meta-row {
+            font-size: 14.5px;
+            line-height: 1.5;
+            color: #333;
+        }
+        .meta-row strong {
+            color: #2e7d32;
+        }
+        .detail-body {
+            padding: 32px;
+            display: grid;
+            gap: 24px;
+        }
+        .info-section {
+            background: #ffffff;
+            border: 1px solid #e6eee6;
+            border-radius: 12px;
+            padding: 24px;
+        }
+        .info-section-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #1b5e20;
+            font-size: 19px;
+            margin: 0 0 18px 0;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #e8f5e9;
+        }
+        .sub-field {
+            margin-bottom: 16px;
+        }
+        .sub-field:last-child {
+            margin-bottom: 0;
+        }
+        .sub-field-label {
+            font-weight: 700;
+            color: #2c3e2c;
+            font-size: 15px;
+            margin-bottom: 6px;
+        }
+        .sub-field-text p {
+            margin: 0 0 10px 0;
+            line-height: 1.7;
+            color: #3a423a;
+            font-size: 15px;
+            text-align: left;
+        }
+        .sub-field-text p:last-child {
+            margin-bottom: 0;
+        }
+        .warning-section {
+            background: #fff8f8;
+            border: 1px solid #f5c6cb;
+            border-left: 5px solid #d32f2f;
+        }
+        .warning-section .info-section-title {
+            color: #b71c1c;
+            border-bottom-color: #fadbd8;
+        }
+        @media (max-width: 820px) {
+            .detail-hero {
+                grid-template-columns: 1fr;
+                padding: 20px;
+            }
+            .gallery-main {
+                height: 250px;
+            }
+            .detail-body {
+                padding: 20px;
+            }
+            .plant-title {
+                font-size: 26px;
+            }
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <a href="index.html" class="btn-back">← Quay lại danh sách</a>
+    <header class="top-nav">
+        <div class="nav-left">
+            <span class="logo-icon">🌿</span>
+            <span class="logo-text">TRA CỨU & QUẢN LÝ DƯỢC LIỆU <br><small>Tri thức y học cổ truyền trong tầm tay</small></span>
+        </div>
+        <div class="nav-right">
+            <a href="index.html" class="nav-link">Trang chủ</a>
+            <a href="danhmuc.html" class="nav-link">Danh mục</a>
+            <a href="admin.html" class="nav-link" id="nav-admin-link">Quản trị</a>
+        </div>
+    </header>
+
+    <div class="detail-wrapper">
+        <a href="index.html" class="btn-back" style="margin-top: 0;">← Quay lại danh sách</a>
         
         <div id="chi-tiet-duoc-lieu">
-            <p>Đang truy xuất dữ liệu từ đám mây...</p>
+            <p style="text-align: center; padding: 40px; color: #555;">Đang truy xuất dữ liệu từ đám mây...</p>
         </div>
     </div>
+
+    <footer class="bottom-footer">
+        <p>&copy; 2026 - Hệ thống Tra cứu và quản lý thông tin dược liệu. Phát triển bởi Dương Hạ Vy và Đoàn Trương Anh Thư.</p>
+    </footer>
 
     <script type="module" src="chitiet.js"></script>
 </body>

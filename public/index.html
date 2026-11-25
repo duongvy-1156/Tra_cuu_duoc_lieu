@@ -26,18 +26,17 @@
             <p>Hệ thống tra cứu thông tin dược liệu toàn diện, chính xác và đáng tin cậy.</p>
             
             <div class="search-box" style="display: flex; gap: 10px; justify-content: center; align-items: center; max-width: 700px; margin: 0 auto;">
-                
                 <div class="custom-dropdown" id="dropdown-tieu-chi">
                     <div class="dropdown-selected">Tên cây thuốc</div>
                     <div class="dropdown-options">
                         <div class="dropdown-item" data-value="ten">Tên cây thuốc</div>
+                        <div class="dropdown-item" data-value="khoa_hoc">Tên khoa học</div>
                         <div class="dropdown-item" data-value="cong_dung">Công dụng</div>
                         <div class="dropdown-item" data-value="dia_diem">Nơi phân bố</div>
                     </div>
                 </div>
                 <input type="text" id="input-tim-kiem" placeholder="Nhập tên cây thuốc cần tìm..." style="flex: 1; border-radius: 30px; padding: 14px 20px; border: none; box-shadow: 0 4px 10px rgba(0,0,0,0.1); outline: none;">
                 <div id="ket-qua-tim-kiem" class="search-results-dropdown"></div>
-                
             </div>
         </div>
     </section>
@@ -46,7 +45,7 @@
         <div class="container">
             <h2 class="section-title">🔥 Dược Liệu Phổ Biến</h2>
             <div id="danh-sach-pho-bien" class="grid-container">
-                <p style="text-align: center; width: 100%;">Đang tải dữ liệu phổ biến...</p>
+                <p class="empty-message">Đang tải dữ liệu phổ biến...</p>
             </div>
         </div>
     </section>
@@ -65,7 +64,7 @@
     </section>
 
     <footer class="bottom-footer">
-        <p>&copy; 2026 - Hệ thống Quản lý và Tra cứu Dược liệu. Phát triển bởi Dương Hạ Vy.</p>
+        <p>&copy; 2026 - Hệ thống Tra cứu và quản lý thông tin dược liệu. Phát triển bởi Dương Hạ Vy và Đoàn Trương Anh Thư.</p>
     </footer>
 
     <script type="module" src="app.js"></script>

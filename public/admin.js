@@ -1,34 +1,20 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-import { getFirestore, collection, getDocs, doc, deleteDoc, addDoc, updateDoc, getDoc, query, where } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
-const firebaseConfig = {
-  apiKey: "AIzaSyAYMLhxvoF3SY5VyaTUXhAwhX0xAoLaVJU",
-  authDomain: "qlvatracuuduoclieu.firebaseapp.com",
-  projectId: "qlvatracuuduoclieu",
-  storageBucket: "qlvatracuuduoclieu.firebasestorage.app",
-  messagingSenderId: "1064110527972",
-  appId: "1:1064110527972:web:5e0f28e33840bcd67763f1",
-  measurementId: "G-Z0VQQZ4FM3"
-};
+import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+import { collection, getDocs, doc, deleteDoc, addDoc, updateDoc, getDoc, query, where } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+import { auth, db } from "./firebase-config.js";
 
-// Khởi tạo Firebase
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+const formContainer = document.getElementById("form-container");
+const btnSave = document.getElementById("btn-save");
+let idDangSua = null;
 
-// 1. KIỂM TRA BẢO MẬT: Bắt buộc đăng nhập VÀ phải có tên trong danh sách VIP
-// 1. KIỂM TRA BẢO MẬT BẰNG FIREBASE DATABSE
+// 1. Kiểm tra quyền quản trị viên
 onAuthStateChanged(auth, async (user) => {
     if (user) {
-        // Tìm email trong bảng quan_tri_vien
         const q = query(collection(db, "quan_tri_vien"), where("email", "==", user.email.toLowerCase()));
         const querySnapshot = await getDocs(q);
 
         if (!querySnapshot.empty) {
-            // Hợp lệ: Tải dữ liệu bảng điều khiển
             taiDuLieuAdmin();
         } else {
-            // Lách luật: Kích ra ngoài
             signOut(auth);
             window.location.href = "login.html";
         }
@@ -37,73 +23,85 @@ onAuthStateChanged(auth, async (user) => {
     }
 });
 
-// 2. HÀM TẢI DỮ LIỆU LÊN BẢNG
+// 2. Tải danh sách lên bảng (sắp xếp theo tiếng Việt)
 async function taiDuLieuAdmin() {
     try {
         const querySnapshot = await getDocs(collection(db, "duoc_lieu"));
         const tbody = document.getElementById("danh-sach-admin");
-        let htmlContent = "";
+        const danhSach = [];
 
-        // Lặp qua từng cây thuốc lấy được
-        querySnapshot.forEach((doc) => {
-            const data = doc.data();
-            const id = doc.id; // Lấy ID duy nhất của cây để sau này làm chức năng sửa/xóa
-            
-            htmlContent += `
-                <tr>
-                    <td><strong>${data.ten_thuong_goi || 'Chưa cập nhật'}</strong></td>
-                    <td><i>${data.ten_khoa_hoc || 'Chưa cập nhật'}</i></td>
-                    <td>${data.tap_trung_trong_o || 'Chưa cập nhật'}</td>
-                    <td>
-                        <button class="action-btn" style="background-color: #2196F3; color: white;" onclick="xemMaQR('${id}')">Mã QR</button>
-                        
-                        <button class="action-btn btn-edit" onclick="suaDuocLieu('${id}')">Sửa</button>
-                        <button class="action-btn btn-delete" onclick="xoaDuocLieu('${id}')">Xóa</button>
-                    </td>
-                </tr>
-            `;
+        querySnapshot.forEach((docSnap) => {
+            danhSach.push({ id: docSnap.id, ...docSnap.data() });
         });
 
-        tbody.innerHTML = htmlContent;
+        danhSach.sort((a, b) => (a.ten_thuong_goi || "").localeCompare(b.ten_thuong_goi || "", 'vi'));
+
+        if (danhSach.length === 0) {
+            tbody.innerHTML = "<tr><td colspan='4' style='text-align:center;'>Chưa có dược liệu nào trong hệ thống.</td></tr>";
+            return;
+        }
+
+        tbody.innerHTML = danhSach.map(data => `
+            <tr>
+                <td><strong>${data.ten_thuong_goi || 'Chưa cập nhật'}</strong></td>
+                <td><i>${data.ten_khoa_hoc || 'Chưa cập nhật'}</i></td>
+                <td>${data.tap_trung_trong_o || 'Chưa cập nhật'}</td>
+                <td>
+                    <button class="action-btn" style="background-color: #2196F3; color: white;" onclick="xemMaQR('${data.id}')">Mã QR</button>
+                    <button class="action-btn btn-edit" onclick="suaDuocLieu('${data.id}')">Sửa</button>
+                    <button class="action-btn btn-delete" onclick="xoaDuocLieu('${data.id}')">Xóa</button>
+                </td>
+            </tr>
+        `).join('');
     } catch (error) {
         console.error("Lỗi khi tải dữ liệu:", error);
         document.getElementById("danh-sach-admin").innerHTML = "<tr><td colspan='4'>Có lỗi xảy ra khi tải dữ liệu.</td></tr>";
     }
 }
 
-// 3. XỬ LÝ NÚT ĐĂNG XUẤT
+// 3. Đăng xuất
 document.getElementById("btn-logout").addEventListener("click", () => {
     signOut(auth).then(() => {
-        // Đăng xuất thành công, chuyển về trang đăng nhập
         window.location.href = "login.html";
     }).catch((error) => {
         alert("Lỗi đăng xuất: " + error.message);
     });
 });
 
-// ==========================================
-// TÍNH NĂNG SỬA VÀ CẬP NHẬT DỮ LIỆU
-// ==========================================
-let idDangSua = null; // Biến nhớ xem đang thêm mới hay sửa
+// 4. Mở / Hủy form
+document.getElementById("btn-show-add-form").addEventListener("click", () => {
+    datLaiTrangThaiForm();
+    formContainer.style.display = "block";
+});
 
-// Khi bấm nút Sửa trên bảng
+document.getElementById("btn-cancel").addEventListener("click", () => {
+    datLaiTrangThaiForm();
+    formContainer.style.display = "none";
+});
+
+function datLaiTrangThaiForm() {
+    idDangSua = null;
+    btnSave.innerText = "Lưu Lên Đám Mây";
+    btnSave.style.backgroundColor = "#2e7d32";
+    btnSave.disabled = false;
+    xoaTrangForm();
+}
+
+// 5. Nạp dữ liệu khi bấm Sửa
 window.suaDuocLieu = async (id) => {
     try {
         const docSnap = await getDoc(doc(db, "duoc_lieu", id));
         if (docSnap.exists()) {
             const data = docSnap.data();
-            
-            // 1. Thông tin chung
+
             document.getElementById("input-ten").value = data.ten_thuong_goi || "";
             document.getElementById("input-khoa-hoc").value = data.ten_khoa_hoc || "";
             document.getElementById("input-ho-thuc-vat").value = data.ho_thuc_vat || "";
 
-            // 2. Thực vật học & Sinh thái (Tương thích ngược với trường dac_tinh_sinh_hoc cũ)
-            document.getElementById("input-mo-ta-hinh-thai").value = data.mo_ta_hinh_thai || data.dac_tinh_sinh_hoc || ""; 
+            document.getElementById("input-mo-ta-hinh-thai").value = data.mo_ta_hinh_thai || data.dac_tinh_sinh_hoc || "";
             document.getElementById("input-khu-vuc").value = data.tap_trung_trong_o || "";
             document.getElementById("input-dac-diem-sinh-thai").value = data.dac_diem_sinh_thai || "";
 
-            // 3. Dược lý và Y học
             document.getElementById("input-bo-phan-dung").value = data.bo_phan_dung || "";
             document.getElementById("input-thanh-phan-hoa-hoc").value = data.thanh_phan_hoa_hoc || "";
             document.getElementById("input-tinh-vi").value = data.tinh_vi_quy_kinh || "";
@@ -111,91 +109,68 @@ window.suaDuocLieu = async (id) => {
             document.getElementById("input-cach-dung").value = data.cach_dung || "";
             document.getElementById("input-luu-y").value = data.luu_y_kieng_ky || "";
 
-            // 4. Kỹ thuật & Thu hái
             document.getElementById("input-ky-thuat-trong").value = data.ky_thuat_trong || "";
             document.getElementById("input-thoi-diem-thu-hai").value = data.thoi_diem_thu_hai || "";
             document.getElementById("input-so-che").value = data.so_che_bao_quan || "";
 
-            // 5. Hình ảnh
             document.getElementById("input-hinh-anh").value = data.danh_sach_anh ? data.danh_sach_anh.join('\n') : (data.hinh_anh || "");
 
             idDangSua = id;
-            const btnSave = document.getElementById("btn-save");
             btnSave.innerText = "Cập Nhật Lên Đám Mây";
-            btnSave.style.backgroundColor = "#ff9800"; 
-            
+            btnSave.style.backgroundColor = "#ff9800";
+
             formContainer.style.display = "block";
-            window.scrollTo(0, 0); 
+            window.scrollTo({ top: 0, behavior: "smooth" });
         }
     } catch (error) {
         console.error("Lỗi lấy dữ liệu:", error);
     }
 };
 
-// Gắn lại chức năng dọn dẹp Form cho nút Hủy Bỏ
-document.getElementById("btn-cancel").addEventListener("click", () => {
-    idDangSua = null; // Reset lại biến
-    const btnSave = document.getElementById("btn-save");
-    btnSave.innerText = "Lưu Lên Đám Mây";
-    btnSave.style.backgroundColor = "#2e7d32"; // Trả lại màu xanh
-});
-
-// Xử lý nút Lưu (Gánh cả 2 việc: Thêm mới hoặc Cập nhật)
-document.getElementById("btn-save").addEventListener("click", async () => {
-    // Thu thập toàn bộ dữ liệu từ 15 ô nhập liệu
+// 6. Lưu mới hoặc cập nhật
+btnSave.addEventListener("click", async () => {
     const ten = document.getElementById("input-ten").value.trim();
-    const khoaHoc = document.getElementById("input-khoa-hoc").value.trim(); 
-    const hoThucVat = document.getElementById("input-ho-thuc-vat").value.trim();
-
-    const moTaHinhThai = document.getElementById("input-mo-ta-hinh-thai").value.trim();
-    const khuVuc = document.getElementById("input-khu-vuc").value.trim();
-    const dacDiemSinhThai = document.getElementById("input-dac-diem-sinh-thai").value.trim();
-
-    const boPhanDung = document.getElementById("input-bo-phan-dung").value.trim();
-    const thanhPhanHoaHoc = document.getElementById("input-thanh-phan-hoa-hoc").value.trim();
-    const tinhVi = document.getElementById("input-tinh-vi").value.trim();
-    const congDung = document.getElementById("input-cong-dung").value.trim();
-    const cachDung = document.getElementById("input-cach-dung").value.trim();
-    const luuY = document.getElementById("input-luu-y").value.trim();
-
-    const kyThuatTrong = document.getElementById("input-ky-thuat-trong").value.trim();
-    const thoiDiemThuHai = document.getElementById("input-thoi-diem-thu-hai").value.trim();
-    const soChe = document.getElementById("input-so-che").value.trim();
-
-    const hinhAnhText = document.getElementById("input-hinh-anh").value.trim();
-    const danhSachAnh = hinhAnhText.split('\n').map(url => url.trim()).filter(url => url !== "");
-    const anhChinh = danhSachAnh.length > 0 ? danhSachAnh[0] : "";
+    const khoaHoc = document.getElementById("input-khoa-hoc").value.trim();
 
     if (!ten || !khoaHoc) {
         alert("Vui lòng nhập Tên phổ thông và Tên khoa học!");
         return;
     }
 
-    const btnSave = document.getElementById("btn-save");
+    const hinhAnhText = document.getElementById("input-hinh-anh").value.trim();
+    const danhSachAnh = hinhAnhText.split('\n').map(url => url.trim()).filter(url => url !== "");
+
+    const linkKhongHopLe = danhSachAnh.find(url => !/^https?:\/\/.+/i.test(url));
+    if (linkKhongHopLe) {
+        alert(`Đường link hình ảnh không hợp lệ (phải bắt đầu bằng http:// hoặc https://):\n${linkKhongHopLe}`);
+        return;
+    }
+
+    const anhChinh = danhSachAnh.length > 0 ? danhSachAnh[0] : "";
+
     btnSave.innerText = "Đang xử lý...";
     btnSave.disabled = true;
 
     try {
-        // Cấu trúc Data chuẩn bị đẩy lên Firestore
         const duocLieuData = {
             ten_thuong_goi: ten,
             ten_khoa_hoc: khoaHoc,
-            ho_thuc_vat: hoThucVat,
+            ho_thuc_vat: document.getElementById("input-ho-thuc-vat").value.trim(),
 
-            mo_ta_hinh_thai: moTaHinhThai,
-            tap_trung_trong_o: khuVuc,
-            dac_diem_sinh_thai: dacDiemSinhThai,
+            mo_ta_hinh_thai: document.getElementById("input-mo-ta-hinh-thai").value.trim(),
+            tap_trung_trong_o: document.getElementById("input-khu-vuc").value.trim(),
+            dac_diem_sinh_thai: document.getElementById("input-dac-diem-sinh-thai").value.trim(),
 
-            bo_phan_dung: boPhanDung,
-            thanh_phan_hoa_hoc: thanhPhanHoaHoc,
-            tinh_vi_quy_kinh: tinhVi,
-            cong_dung: congDung,
-            cach_dung: cachDung,
-            luu_y_kieng_ky: luuY,
+            bo_phan_dung: document.getElementById("input-bo-phan-dung").value.trim(),
+            thanh_phan_hoa_hoc: document.getElementById("input-thanh-phan-hoa-hoc").value.trim(),
+            tinh_vi_quy_kinh: document.getElementById("input-tinh-vi").value.trim(),
+            cong_dung: document.getElementById("input-cong-dung").value.trim(),
+            cach_dung: document.getElementById("input-cach-dung").value.trim(),
+            luu_y_kieng_ky: document.getElementById("input-luu-y").value.trim(),
 
-            ky_thuat_trong: kyThuatTrong,
-            thoi_diem_thu_hai: thoiDiemThuHai,
-            so_che_bao_quan: soChe,
+            ky_thuat_trong: document.getElementById("input-ky-thuat-trong").value.trim(),
+            thoi_diem_thu_hai: document.getElementById("input-thoi-diem-thu-hai").value.trim(),
+            so_che_bao_quan: document.getElementById("input-so-che").value.trim(),
 
             hinh_anh: anhChinh,
             danh_sach_anh: danhSachAnh
@@ -205,17 +180,13 @@ document.getElementById("btn-save").addEventListener("click", async () => {
             await updateDoc(doc(db, "duoc_lieu", idDangSua), duocLieuData);
             alert("Đã cập nhật thành công!");
         } else {
+            duocLieuData.luot_xem = 0;
             await addDoc(collection(db, "duoc_lieu"), duocLieuData);
             alert("Đã thêm dược liệu mới thành công!");
         }
-        
-        idDangSua = null;
-        btnSave.innerText = "Lưu Lên Đám Mây";
-        btnSave.style.backgroundColor = "#2e7d32";
-        btnSave.disabled = false;
-        
+
+        datLaiTrangThaiForm();
         formContainer.style.display = "none";
-        xoaTrangForm();
         taiDuLieuAdmin();
     } catch (error) {
         console.error("Lỗi:", error);
@@ -225,73 +196,43 @@ document.getElementById("btn-save").addEventListener("click", async () => {
     }
 });
 
+// 7. Xóa dược liệu
 window.xoaDuocLieu = async (id) => {
-    // Hiện hộp thoại hỏi lại cho chắc chắn
     const xacNhan = confirm("Hành động này không thể hoàn tác. Bạn có chắc chắn muốn xóa cây thuốc này khỏi hệ thống?");
-    
     if (xacNhan) {
         try {
-            // Lệnh bắn lên đám mây để xóa Document có ID tương ứng
             await deleteDoc(doc(db, "duoc_lieu", id));
+            if (idDangSua === id) {
+                datLaiTrangThaiForm();
+                formContainer.style.display = "none";
+            }
             alert("Đã xóa thành công!");
-            
-            // Xóa xong thì gọi lại hàm tải dữ liệu để bảng tự động cập nhật
-            taiDuLieuAdmin(); 
+            taiDuLieuAdmin();
         } catch (error) {
             console.error("Lỗi khi xóa:", error);
             alert("Lỗi khi xóa: " + error.message);
         }
     }
 };
-// ==========================================
-// XỬ LÝ ẨN/HIỆN FORM THÊM DỮ LIỆU
-// ==========================================
-const formContainer = document.getElementById("form-container");
 
-// Bấm nút "Thêm Dược Liệu Mới" -> Hiện Form
-document.getElementById("btn-show-add-form").addEventListener("click", () => {
-    formContainer.style.display = "block"; 
-});
-
-// Bấm nút "Hủy Bỏ" -> Ẩn Form và xóa trắng dữ liệu đang nhập dở
-document.getElementById("btn-cancel").addEventListener("click", () => {
-    formContainer.style.display = "none"; 
-    xoaTrangForm(); 
-});
-
-// Hàm phụ để làm sạch các ô nhập liệu
 function xoaTrangForm() {
-    document.getElementById("input-ten").value = "";
-    document.getElementById("input-khoa-hoc").value = "";
-    document.getElementById("input-ho-thuc-vat").value = "";
-    
-    document.getElementById("input-mo-ta-hinh-thai").value = "";
-    document.getElementById("input-khu-vuc").value = "";
-    document.getElementById("input-dac-diem-sinh-thai").value = "";
-    
-    document.getElementById("input-bo-phan-dung").value = "";
-    document.getElementById("input-thanh-phan-hoa-hoc").value = "";
-    document.getElementById("input-tinh-vi").value = "";
-    document.getElementById("input-cong-dung").value = "";
-    document.getElementById("input-cach-dung").value = "";
-    document.getElementById("input-luu-y").value = "";
-    
-    document.getElementById("input-ky-thuat-trong").value = "";
-    document.getElementById("input-thoi-diem-thu-hai").value = "";
-    document.getElementById("input-so-che").value = "";
-    
-    document.getElementById("input-hinh-anh").value = "";
+    const ids = [
+        "input-ten", "input-khoa-hoc", "input-ho-thuc-vat",
+        "input-mo-ta-hinh-thai", "input-khu-vuc", "input-dac-diem-sinh-thai",
+        "input-bo-phan-dung", "input-thanh-phan-hoa-hoc", "input-tinh-vi",
+        "input-cong-dung", "input-cach-dung", "input-luu-y",
+        "input-ky-thuat-trong", "input-thoi-diem-thu-hai", "input-so-che",
+        "input-hinh-anh"
+    ];
+    ids.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = "";
+    });
 }
 
-// 8. TÍNH NĂNG TỰ ĐỘNG TẠO MÃ QR
+// 8. Tạo mã QR
 window.xemMaQR = (id) => {
-    // 1. Tạo đường link thực tế trỏ thẳng vào trang chi tiết của cây thuốc này
-    // (Bắt buộc dùng link web.app để quét bằng điện thoại sẽ chạy được bằng mạng 4G)
     const linkChiTiet = `https://qlvatracuuduoclieu.web.app/chitiet.html?id=${id}`;
-    
-    // 2. Gọi API để biến đường link trên thành một tấm ảnh QR kích thước 300x300
     const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(linkChiTiet)}`;
-    
-    // 3. Mở tấm ảnh QR đó sang một Tab mới để Ban chủ nhiệm dễ dàng nhấp chuột phải -> Lưu hình ảnh (Save image as...)
     window.open(qrApiUrl, "_blank");
 };
